@@ -80,20 +80,21 @@
 					if(!isNaN(x) && !isNaN(y)){		//Comprueba que eran números
 						x = (x/upmm).toFixed(3);	//Convierte unidad hpgl a milímetros
 						y = (y/upmm).toFixed(3);	//Convierte unidad hpgl a milímetros
-						outstr+= "G1 X"+x+" Y"+y+" F"+feed+'\n';
+						outstr+= "G1 X"+x+" Y"+y+"\n";
 					}
 				}
 				else if(str[i].search("PU") != -1){	//Si es el comando "subir herramienta"
-					outstr+= "G1 Z"+zup+'\n';
+					outstr+= "G1 Z"+zup+" F"+feedz+"\n";
 				}
 				else if(str[i].search("PD") != -1){
-					outstr+= "G1 Z"+zdown+'\n';
+					outstr+= "G1 Z"+zdown+" F"+feed+"\n";
 				}
 			}
 			gcodeStr+= ";Converted using HPGL2GCODE by LuxARTS\n";
 			gcodeStr+= "G21\n";		//Unidades en mm
+			gcodeStr+= "G1 Z"+zup+"\n";		//Unidades en mm
 			gcodeStr+= outstr;		//Codigo HPGL convertido
-			gcodeStr+= "G28\n";		//Home
+			gcodeStr+= "G1 X0 Y0 Z10\n";		//Home
 
 			document.getElementById("gCode").value = gcodeStr;
 		}
