@@ -33,15 +33,15 @@
 <body>
 	<table>
 		<tr>
-			<td><h1>HPGL</h1></td>
+			<td><h1>Exellon (.drd)/HPGL (.hpgl)</h1></td>
 			<td><h1>GCode</h1></td>
 		</tr>
 		<tr>
-			<td><textarea rows=25 cols="43" id="hpglCode"></textarea></td>
+			<td><textarea rows=25 cols="43" id="inputCode"></textarea></td>
 			<td><textarea rows=25 cols="43" id="gCode"></textarea></td>
 		</tr>
 		<tr>
-			<td><input type="file" id="hpglFile"></td>
+			<td><input type="file" id="inputFile" accept=".hpgl .drd"></td>
 			<td rowspan="2" id="descargar"><button onclick="descargar()">Descargar archivo</button></td>
 		</tr>
 		<tr>
@@ -51,69 +51,128 @@
 	
 
 	<script type="text/javascript">
-		function convert(){
+		var fileName = "";
+
+		function convert(fileType){
 			var str = "";
 			var outstr = "";
 			var gcodeStr = "";
-			var x1,x2,y1,y2;
 			var x, y;
-			var upmm=40.2;
 			var feed=900;
 			var feedz=1800;
 			var zup=2;
 			var zdown=0;
 			var i;
 
-			var hpgl = document.getElementById("hpglCode").value;
+			var inputCode = document.getElementById("inputCode").value;
 
-			str = hpgl.split('\n');
-			for(i=0;i<str.length;i++){
-				if(str[i].search("PA") != -1){		//Si es el comando "mover herramienta"
-					x1 = 3;							//Obtiene la posición de la X
-					y1 = str[i].indexOf(",")+1;		//Obtiene la posición de la Y
-					x2 = y1-1;						//Obtiene el final de la X
-					y2 = str[i].indexOf(";");		//Obtiene el final de la Y
-					x = str[i].substring(x1,x2);	//Copia el string entre x1 y x2
-					y = str[i].substring(y1,y2);	//Copia el string entre y1 y y2
-					x = parseInt(x);				//Convierte el string X en un entero
-					y = parseInt(y);				//Convierte el string Y en un entero
-					if(!isNaN(x) && !isNaN(y)){		//Comprueba que eran números
-						x = (x/upmm).toFixed(3);	//Convierte unidad hpgl a milímetros
-						y = (y/upmm).toFixed(3);	//Convierte unidad hpgl a milímetros
-						outstr+= "G1 X"+x+" Y"+y+"\n";
+			str = inputCode.split('\n');//Separa cada linea en substrings
+
+			if(fileType == "hpgl"){
+				var upmm=40.2;
+				var x1,x2,y1,y2;
+
+				for(i=0;i<str.length;i++){
+					if(str[i].search("PA") != -1){		//Si es el comando "mover herramienta"
+						x1 = 3;							//Obtiene la posición de la X
+						y1 = str[i].indexOf(",")+1;		//Obtiene la posición de la Y
+						x2 = y1-1;						//Obtiene el final de la X
+						y2 = str[i].indexOf(";");		//Obtiene el final de la Y
+						x = str[i].substring(x1,x2);	//Copia el string entre x1 y x2
+						y = str[i].substring(y1,y2);	//Copia el string entre y1 y y2
+						x = parseInt(x);				//Convierte el string X en un entero
+						y = parseInt(y);				//Convierte el string Y en un entero
+						if(!isNaN(x) && !isNaN(y)){		//Comprueba que eran números
+							x = (x/upmm).toFixed(3);	//Convierte unidad hpgl a milímetros
+							y = (y/upmm).toFixed(3);	//Convierte unidad hpgl a milímetros
+							outstr+= "G1 X"+x+" Y"+y+"\n";
+						}
+					}
+					else if(str[i].search("PU") != -1){	//Si es el comando "subir herramienta"
+						outstr+= "G1 Z"+zup+" F"+feedz+"\n";
+					}
+					else if(str[i].search("PD") != -1){
+						outstr+= "G1 Z"+zdown+" F"+feed+"\n";
 					}
 				}
-				else if(str[i].search("PU") != -1){	//Si es el comando "subir herramienta"
-					outstr+= "G1 Z"+zup+" F"+feedz+"\n";
-				}
-				else if(str[i].search("PD") != -1){
-					outstr+= "G1 Z"+zdown+" F"+feed+"\n";
+			}
+			else if(fileType == "drd"){
+				for(i=0;i<str.length;i++){
+					var matches = str[i].match("/X[+-]?\d+(\.\d+)?/g");//Busca la X
+					if(matches != null){
+						matches[0].
+					}
+
+
+					if(str[i].search("X") != -1){		//Si es el comando "mover herramienta"
+						x1 = 3;							//Obtiene la posición de la X
+						y1 = str[i].indexOf(",")+1;		//Obtiene la posición de la Y
+						x2 = y1-1;						//Obtiene el final de la X
+						y2 = str[i].indexOf(";");		//Obtiene el final de la Y
+						x = str[i].substring(x1,x2);	//Copia el string entre x1 y x2
+						y = str[i].substring(y1,y2);	//Copia el string entre y1 y y2
+						x = parseInt(x);				//Convierte el string X en un entero
+						y = parseInt(y);				//Convierte el string Y en un entero
+						if(!isNaN(x) && !isNaN(y)){		//Comprueba que eran números
+							x = (x/upmm).toFixed(3);	//Convierte unidad hpgl a milímetros
+							y = (y/upmm).toFixed(3);	//Convierte unidad hpgl a milímetros
+							outstr+= "G1 X"+x+" Y"+y+"\n";
+						}
+					}
+					else if(str[i].search("PU") != -1){	//Si es el comando "subir herramienta"
+						outstr+= "G1 Z"+zup+" F"+feedz+"\n";
+					}
+					else if(str[i].search("PD") != -1){
+						outstr+= "G1 Z"+zdown+" F"+feed+"\n";
+					}
 				}
 			}
+
 			gcodeStr+= ";Converted using HPGL2GCODE by LuxARTS\n";
-			gcodeStr+= "G21\n";		//Unidades en mm
-			gcodeStr+= "G1 Z"+zup+"\n";		//Unidades en mm
-			gcodeStr+= outstr;		//Codigo HPGL convertido
-			gcodeStr+= "G1 X0 Y0 Z10\n";		//Home
+			gcodeStr+= ";www.github.com/luxarts/hpgl2gcode\n";
+			gcodeStr+= "G21\n";		   //Unidades en mm
+			gcodeStr+= "G1 Z"+zup+"\n";//Levanta la herramienta
+			gcodeStr+= outstr;		   //Codigo HPGL convertido
+			gcodeStr+= "G1 X0 Y0 Z50\n";//Vuelve al inicio y levanta la herramienta
 
 			document.getElementById("gCode").value = gcodeStr;
 		}
 		function cargar(){
-			var hpglFile = document.getElementById("hpglFile").files[0];
+			var fileType = "";
+			var inputFile = document.getElementById("inputFile").files[0];
+
+			var matches = inputFile.name.match(/\.hpgl/g);
+			if(matches != null){//Es un hpgl
+				fileType = "hpgl";
+				fileName = inputFile.name.replace(".hpgl", "");
+			}
+			else{
+				matches = inputFile.name.match(/\.drd/g);
+				if(matches != null){//Es un excellon
+					fileType = "drd";
+					fileName = inputFile.name.replace(".drd", "");
+				}
+				else{//No es ninguno
+					return;
+				}
+			}
+			
+
+
 
 			var fileReader = new FileReader();
 			fileReader.onload = function(fileLoadedEvent){
-				document.getElementById("hpglCode").value = fileLoadedEvent.target.result;
-				convert();
+				document.getElementById("inputCode").value = fileLoadedEvent.target.result;
+				convert(fileType);
 			};
-			fileReader.readAsText(hpglFile, "UTF-8");
+			fileReader.readAsText(inputFile, "UTF-8");
 			
 		}
 		function descargar(){
 			var textToSave = document.getElementById("gCode").value;
 			var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
 			var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
-			var fileNameToSaveAs = "convertedhpgl.gcode";
+			var fileNameToSaveAs = fileName+".gcode";
 
 			var downloadLink = document.createElement("a");
 			downloadLink.download = fileNameToSaveAs;
